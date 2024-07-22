@@ -5,7 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconly/iconly.dart';
 
-
 class BottomMenu extends StatefulWidget {
   const BottomMenu({super.key});
 
@@ -35,10 +34,13 @@ class _BottomMenuState extends State<BottomMenu> {
     Profile(),
   ];
 
+  void jumpToPage(int index) {
+    _pageController.jumpToPage(index);
+    context.read<BottomNavCubit>().selectTab(index);
+  }
+
   @override
   Widget build(BuildContext context) {
-    // final l10n = AppLocalizations.of(context)!; // Move this to build method
-
     return Scaffold(
       backgroundColor: Colors.white,
       bottomNavigationBar: _menu(context),
@@ -74,7 +76,7 @@ class _BottomMenuState extends State<BottomMenu> {
         selectedIndex: context.watch<BottomNavCubit>().state,
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
-         destinations: [
+        destinations: [
           NavigationDestination(
             icon: Icon(
               context.watch<BottomNavCubit>().state == 0
@@ -105,7 +107,6 @@ class _BottomMenuState extends State<BottomMenu> {
             ),
             label: 'Fancy',
           ),
-         
           NavigationDestination(
             icon: Icon(
               context.watch<BottomNavCubit>().state == 3
@@ -118,10 +119,10 @@ class _BottomMenuState extends State<BottomMenu> {
           ),
         ],
         onDestinationSelected: (index) {
-          context.read<BottomNavCubit>().selectTab(index);
-          _pageController.jumpToPage(index);
+          jumpToPage(index);
         },
       ),
     );
   }
 }
+

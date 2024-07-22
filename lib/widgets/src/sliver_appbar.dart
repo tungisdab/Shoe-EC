@@ -99,49 +99,40 @@ class _RecipeDetailAppBarState extends State<RecipeDetailAppBar> {
       ],
       floating: true,
       snap: true,
-      title: GestureDetector(
-        onTap: () {
-          // Chuyển sang tab tìm kiếm
-          // context.read<BottomNavCubit>().selectTab(1);
-        },
-        child: Container(
-          width: double.infinity,
-          height: 35.h,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                spreadRadius: 2,
-                blurRadius: 5,
+      title: Container(
+        width: double.infinity,
+        height: 35.h,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              spreadRadius: 2,
+              blurRadius: 5,
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              IconlyBroken.edit,
+              size: 20.h,
+              color: Colors.red,
+            ),
+            SizedBox(width: 8.w),
+            Text(
+              'Shoes Story',
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: Colors.red,
               ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                IconlyBroken.search,
-                size: 20.h,
-                color: Colors.grey,
-              ),
-              SizedBox(width: 8.w),
-              Text(
-                'Search',
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  color: Colors.grey,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
       centerTitle: true,
     );
   }
 }
-
-
-

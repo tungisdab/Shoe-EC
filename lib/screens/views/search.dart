@@ -1,5 +1,6 @@
 import 'package:app_shoes_ec/styles/style.dart';
 import 'package:flutter/material.dart';
+import 'package:iconly/iconly.dart';
 
 class Search extends StatefulWidget {
   const Search({super.key});
@@ -13,16 +14,16 @@ class _SearchState extends State<Search> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: ThemeColor.bgColor,
-      body: SafeArea(child: Padding(padding:const EdgeInsets.all(16),
+      body: const SafeArea(child: Padding(padding: EdgeInsets.all(16),
         child: Column(
           children: [
             
             TextField(
               decoration: InputDecoration(
-                border: const OutlineInputBorder(),
+                border:  OutlineInputBorder(),
                 prefixIcon: SizedBox(
                   height: 20,
-                  child: Image.asset('assets/icons/shoes/sneakerss.png')),
+                  child: Icon(IconlyBroken.edit)),
                 labelText: 'Search',
               ),
             ),

@@ -1,8 +1,8 @@
 import 'package:app_shoes_ec/authentication/src/sign_in_bloc/sign_in_bloc.dart';
 import 'package:app_shoes_ec/widgets/widgets.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:iconly/iconly.dart';
 
 
 class SignInScreen extends StatefulWidget {
@@ -17,7 +17,7 @@ class _SignInScreenState extends State<SignInScreen> {
   final emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 	bool signInRequired = false;
-	IconData iconPassword = CupertinoIcons.eye_fill;
+	IconData iconPassword = IconlyBroken.show;
 	bool obscurePassword = true;
 	String? _errorMsg;
 	
@@ -52,7 +52,7 @@ class _SignInScreenState extends State<SignInScreen> {
 									hintText: 'Email',
 									obscureText: false,
 									keyboardType: TextInputType.emailAddress,
-									prefixIcon: const Icon(CupertinoIcons.mail_solid),
+									prefixIcon: const Icon(IconlyBroken.message),
 									errorMsg: _errorMsg,
 									validator: (val) {
 										if (val!.isEmpty) {
@@ -72,7 +72,7 @@ class _SignInScreenState extends State<SignInScreen> {
 									hintText: 'Password',
 									obscureText: obscurePassword,
 									keyboardType: TextInputType.visiblePassword,
-									prefixIcon: const Icon(CupertinoIcons.lock_fill),
+									prefixIcon: const Icon(IconlyBroken.password),
 									errorMsg: _errorMsg,
 									validator: (val) {
 										if (val!.isEmpty) {
@@ -87,9 +87,9 @@ class _SignInScreenState extends State<SignInScreen> {
 											setState(() {
 												obscurePassword = !obscurePassword;
 												if(obscurePassword) {
-													iconPassword = CupertinoIcons.eye_fill;
+													iconPassword = IconlyBroken.show;
 												} else {
-													iconPassword = CupertinoIcons.eye_slash_fill;
+													iconPassword = IconlyBold.show;
 												}
 											});
 										},
