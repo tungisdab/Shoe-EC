@@ -1,0 +1,1 @@
+export 'src/edit_profile_controller.dart';
