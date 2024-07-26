@@ -7,7 +7,8 @@
         {
             "name": "Shop",
             "request": "launch",
-            "type": "dart"
+            "type": "dart",
+            "program": "lib/main.dart"
         },
         {
             "name": "Shop (profile mode)",

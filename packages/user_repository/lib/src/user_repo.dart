@@ -6,6 +6,8 @@ abstract class UserRepository {
 
 	Future<MyUser> signUp(MyUser myUser, String password);
 
+  Future<MyUser> signInWithGoogle();
+
 	Future<void> setUserData(MyUser user);
 
 	Future<void> signIn(String email, String password);
