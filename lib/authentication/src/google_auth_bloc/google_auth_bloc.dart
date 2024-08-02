@@ -13,15 +13,26 @@ class GoogleAuthBloc extends Bloc<GoogleAuthEvent, GoogleAuthState> {
   }
 
   final UserRepository _userRepository;
+
   Future<void> _signInWithGoogle(
       GoogleSignInEvent event, Emitter<GoogleAuthState> emit) async {
     emit(GoogleAuthPending());
-    final user = await _userRepository.signInWithGoogle();
-    await _userRepository.setUserData(user);
-    if (user == null) {
-      emit(GoogleAuthError('Sign in failed'));
-    } else {
+    try {
+      final user = await _userRepository.signInWithGoogle();
+      if (user == null) {
+        emit(GoogleAuthError('Sign in failed'));
+        return;
+      }
+
+      final userExists = await _userRepository.checkUserExists(user.userId);
+
+      if (!userExists) {
+        await _userRepository.setUserData(user);
+      }
+
       emit(GoogleAuthSuccess(user));
+    } catch (e) {
+      emit(GoogleAuthError(e.toString()));
     }
   }
 }

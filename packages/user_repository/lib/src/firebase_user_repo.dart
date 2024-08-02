@@ -8,6 +8,8 @@ import 'package:user_repository/src/user_repo.dart';
 class FirebaseUserRepo implements UserRepository {
   final FirebaseAuth _firebaseAuth;
   final usersCollection = FirebaseFirestore.instance.collection('users');
+  final currentUser = FirebaseAuth.instance.currentUser;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   FirebaseUserRepo({
     FirebaseAuth? firebaseAuth,
@@ -44,6 +46,12 @@ class FirebaseUserRepo implements UserRepository {
       log(e.toString());
       rethrow;
     }
+  }
+
+  @override
+  Future<bool> checkUserExists(String userId) async {
+    final doc = await _firestore.collection('users').doc(userId).get();
+    return doc.exists;
   }
 
   @override

@@ -1,5 +1,6 @@
 import 'package:app_shoes_ec/components/components.dart';
 import 'package:app_shoes_ec/screens/screens.dart';
+import 'package:app_shoes_ec/styles/style.dart';
 import 'package:app_shoes_ec/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -56,7 +57,7 @@ class _DetailProductState extends State<DetailProduct> {
   Widget build(BuildContext context) {
     double widthScreen = MediaQuery.of(context).size.width;
     return Scaffold(
-      backgroundColor: Colors.white,
+      // backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.only(left: 16.w, right: 16.w, top: 16.h),
@@ -90,11 +91,13 @@ class _DetailProductState extends State<DetailProduct> {
             EdgeInsets.only(left: 10.w, right: 10.w, top: 10.h, bottom: 10.h),
         height: 400.h,
         decoration: BoxDecoration(
-          color: Colors.white,
+              color: Theme.of(context).colorScheme.tertiary,
+          // color: Colors.white,
           borderRadius: BorderRadius.circular(10.r),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.3),
+                            color: Theme.of(context).colorScheme.shadow,
+
               spreadRadius: 3,
               blurRadius: 5,
               offset: const Offset(3, 5),

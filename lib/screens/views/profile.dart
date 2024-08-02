@@ -1,11 +1,18 @@
+import 'dart:developer';
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:app_shoes_ec/authentication/authentication.dart';
-import 'package:app_shoes_ec/controllers/controllers.dart';
-import 'package:app_shoes_ec/screens/screens.dart';
 import 'package:app_shoes_ec/styles/style.dart';
+import 'package:app_shoes_ec/screens/screens.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:iconly/iconly.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -15,229 +22,338 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
-  final editProfileController = Get.put(EditProfileController());
-  final String _selectedImage = '';
+  final currentUser = FirebaseAuth.instance.currentUser!;
+  Uint8List? _image;
+
+  Future<void> selectImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      final File imageFile = File(pickedFile.path);
+
+      log('Image path: ${imageFile.path}');
+      // Upload image to Firebase Storage
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child('image_profile/${FirebaseAuth.instance.currentUser!.uid}.jpg');
+      final uploadTask = storageRef.putFile(imageFile);
+
+      // Get download URL
+      final snapshot = await uploadTask.whenComplete(() {});
+      final downloadUrl = await snapshot.ref.getDownloadURL();
+
+      // Update Firestore with the new image URL
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .update({'imageUrl': downloadUrl});
+    }
+  }
+
+  Future<void> editField(String field) async {
+    String newValue = '';
+    final result = await showDialog<String>(
+        context: context,
+        builder: (context) => AlertDialog(
+              title: Text("Edit $field"),
+              content: TextField(
+                autofocus: true,
+                onChanged: (value) {
+                  newValue = value;
+                },
+                decoration: InputDecoration(
+                  hintText: "Enter new $field",
+                ),
+              ),
+              actions: [
+                TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancel')),
+                TextButton(
+                    onPressed: () => Navigator.of(context).pop(newValue),
+                    child: const Text('Save'))
+              ],
+            ));
+
+    if (result != null && result.trim().isNotEmpty) {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUser.uid)
+          .update({field: result});
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ThemeColor.bgColor,
-      body: SafeArea(
+        backgroundColor: ThemeColor.bgColor,
+        body: SafeArea(
           child: SizedBox(
-        width: MediaQuery.of(context).size.width,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const Padding(padding: EdgeInsets.only(top: 50)),
-            ImageField(image: _selectedImage),
-            NameField(),
-            emailField(),
-            const SizedBox(height: 20),
-            editProfileButton(context),
-            // logOutButton(context),
-            SizedBox(
-              height: 50,
-              width: 50,
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (e) => const Settings(),
-                    ),
-                  );
-                },
-                child: const Icon(
-                  IconlyBroken.setting,
-                  color: Colors.red,
-                ),
-              ),
-            ),
-           IconButton(
-  onPressed: () {
-    context.read<SignInBloc>().add(const SignOutRequired());
-  },
-  icon: const Icon(IconlyBroken.logout),
-)
-
-          ],
-        ),
-      )),
-    );
-  }
-}
-
-class ImageField extends StatelessWidget {
-  ImageField({super.key, required this.image});
-  final String image;
-  final EditProfileController editImageController = Get.find();
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Container(
-            height: 150,
-            width: 150,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(100),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(100),
-              // child: Image(
-              //   image: NetworkImage(editImageController.imageUrl.value),
-              //   fit: BoxFit.cover,
-              // )
-              child: Image.asset(
-                'assets/icons/common/test.jpg',
-                height: 50,
-                fit: BoxFit.cover,
-              ),
-            )),
-        Positioned(
-          bottom: 0,
-          right: 0,
-          child: InkWell(
-            onTap: () {
-              _showBottomSheet(context);
-            },
-            child: Container(
-              height: 36,
-              width: 36,
-              padding: const EdgeInsets.all(5),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(5),
-              ),
-              child: Image.asset(
-                "assets/icons/common/edit.png",
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  void _showBottomSheet(BuildContext context) {
-    showModalBottomSheet(
-        context: context,
-        builder: (_) {
-          return SizedBox(
-            height: MediaQuery.of(context).size.height / 3,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            width: double.infinity,
+            child: Column(
               children: [
-                InkWell(
-                  onTap: () async {
-                    // final ImagePicker picker = ImagePicker();
-                    // final XFile? imageUrl = await picker.pickImage(
-                    //     source: ImageSource.gallery, imageQuality: 80);
-                    // if (imageUrl != null) {
-                    //   // log('${imageUrl.path}\n' + '${imageUrl.mimeType}');
-                    //   // image = imageUrl.path;
-                    //   // Get.put(EditProfileController()).updateImage(image);
-                    //   Navigator.pop(context);
-                    // }
-                    Navigator.pop(context);
+                StreamBuilder<DocumentSnapshot>(
+                  stream: FirebaseAuth.instance.currentUser != null
+                      ? FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(FirebaseAuth.instance.currentUser!.uid)
+                          .snapshots()
+                      : null,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      final userData =
+                          snapshot.data!.data() as Map<String, dynamic>;
+
+                      return Padding(
+                        padding: const EdgeInsets.only(left: 20, right: 20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Padding(padding: EdgeInsets.only(top: 50)),
+                            imageField(userData['imageUrl']?.toString() ?? ''),
+                            field('Name'),
+                            const SizedBox(height: 20),
+                            nameField(userData['name']),
+                            const SizedBox(height: 20),
+                            field('Phone'),
+                            const SizedBox(height: 20),
+                            phoneField(userData['phone']),
+                            const SizedBox(height: 20),
+                            field('Address'),
+                            const SizedBox(height: 20),
+                            addressField(userData['address']),
+                          ],
+                        ),
+                      );
+                    } else {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
                   },
-                  child: const Icon(
-                    Icons.photo_library_outlined,
-                    size: 100,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                InkWell(
-                  onTap: () async {
-                    // final ImagePicker picker = ImagePicker();
-                    // final XFile? imageUrl = await picker.pickImage(
-                    //     source: ImageSource.camera, imageQuality: 80);
-                    // if (imageUrl != null) {
-                    //   // log('${imageUrl.path}\n' + '${imageUrl.mimeType}');
-                    //   // image = imageUrl.path;
-                    //   Get.put(EditProfileController()).updateImage(image);
-                    // }
-                    Navigator.pop(context);
-                  },
-                  child: const Icon(
-                    Icons.camera_alt_outlined,
-                    size: 100,
-                  ),
                 ),
               ],
             ),
-          );
-        });
+          ),
+        ));
   }
+
+  Widget field(String field) => Text(
+        field,
+        style: const TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+      );
+
+  Widget imageField(String imageUrl) => Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Stack(
+            children: [
+              Container(
+                height: 150,
+                width: 150,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.red, width: 2),
+                ),
+                child: imageUrl.isNotEmpty
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(100),
+                        child: Image.network(imageUrl, fit: BoxFit.fitHeight),
+                      )
+                    : const Icon(
+                        IconlyBroken.profile,
+                        size: 100,
+                        color: Colors.red,
+                      ),
+              ),
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: InkWell(
+                  onTap: () {
+                    selectImage();
+                  },
+                  child: Container(
+                    height: 30,
+                    width: 30,
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: const Icon(
+                      IconlyBroken.camera,
+                      color: Colors.red,
+                      size: 35,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          Column(
+            children: [
+              SizedBox(
+                height: 50,
+                width: 50,
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (e) => const SettingsApp(),
+                      ),
+                    );
+                  },
+                  child: const Icon(
+                    IconlyBroken.setting,
+                    color: Colors.red,
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: () {
+                  context.read<SignInBloc>().add(const SignOutRequired());
+                },
+                icon: const Icon(IconlyBroken.logout),
+              )
+            ],
+          )
+        ],
+      );
+
+  Widget nameField(String name) => Container(
+        height: 70.h,
+        width: double.infinity,
+        margin: EdgeInsets.only(left: 20.h, right: 20.h),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.red, width: 2),
+          borderRadius: BorderRadius.circular(20.h),
+        ),
+        child: Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Padding(
+                  padding:
+                      EdgeInsets.only(left: 20.h), // Khoảng cách từ bên trái
+                  child: ShaderMask(
+                    shaderCallback: (Rect bounds) {
+                      return ThemeColor().gradient.createShader(
+                          Rect.fromLTWH(0, 0, bounds.width, bounds.height));
+                    },
+                    child: Text(
+                      name,
+                      style: const TextStyle(
+                          fontSize: 25,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.only(right: 20.h),
+                child: GestureDetector(
+                    onTap: () => editField('name'),
+                    child: const Icon(IconlyBroken.edit, color: Colors.red)),
+              ),
+            ],
+          ),
+        ),
+      );
+
+  Widget phoneField(String phone) => Container(
+        height: 70.h,
+        width: double.infinity,
+        margin: EdgeInsets.only(left: 20.h, right: 20.h),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.red, width: 2),
+          borderRadius: BorderRadius.circular(20.h),
+        ),
+        child: Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Padding(
+                  padding:
+                      EdgeInsets.only(left: 20.h), // Khoảng cách từ bên trái
+                  child: ShaderMask(
+                    shaderCallback: (Rect bounds) {
+                      return ThemeColor().gradient.createShader(
+                          Rect.fromLTWH(0, 0, bounds.width, bounds.height));
+                    },
+                    child: Text(
+                      phone,
+                      style: const TextStyle(
+                          fontSize: 25,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.only(right: 20.h),
+                child: GestureDetector(
+                    onTap: () => editField('phone'),
+                    child: const Icon(IconlyBroken.edit, color: Colors.red)),
+              ),
+            ],
+          ),
+        ),
+      );
+
+  Widget addressField(String address) => Container(
+        height: 70.h,
+        width: double.infinity,
+        margin: EdgeInsets.only(left: 20.h, right: 20.h),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.red, width: 2),
+          borderRadius: BorderRadius.circular(20.h),
+        ),
+        child: Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Padding(
+                  padding:
+                      EdgeInsets.only(left: 20.h), // Khoảng cách từ bên trái
+                  child: ShaderMask(
+                    shaderCallback: (Rect bounds) {
+                      return ThemeColor().gradient.createShader(
+                          Rect.fromLTWH(0, 0, bounds.width, bounds.height));
+                    },
+                    child: Text(
+                      address,
+                      style: const TextStyle(
+                          fontSize: 25,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.only(right: 20.h),
+                child: GestureDetector(
+                    onTap: () => editField('address'),
+                    child: const Icon(IconlyBroken.edit, color: Colors.red)),
+              ),
+            ],
+          ),
+        ),
+      );
 }
-
-// Widget nameField() => Obx(() => Text(
-//         // APIs.me.name,
-//         EditProfileController().name.value,
-//         style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-//       ));
-
-class NameField extends StatelessWidget {
-  NameField({super.key});
-
-  final EditProfileController editProfileController = Get.find();
-  @override
-  Widget build(BuildContext context) {
-    return ShaderMask(
-      shaderCallback: (Rect bounds) {
-        return ThemeColor()
-            .gradient
-            .createShader(Rect.fromLTWH(0, 0, bounds.width, bounds.height));
-      },
-      child: const Text(
-        // editProfileController.name.value,
-        "MA",
-        style: TextStyle(
-            fontSize: 25, fontWeight: FontWeight.bold, color: Colors.white),
-      ),
-    );
-  }
-}
-
-Widget emailField() => ShaderMask(
-    shaderCallback: (Rect bounds) {
-      return ThemeColor()
-          .gradient
-          .createShader(Rect.fromLTWH(0, 0, bounds.width, bounds.height));
-    },
-    // child: Text(APIs.me.email,
-    //     style: TextStyle(fontSize: 20, fontWeight: FontWeight.normal, color: Colors.white)),
-    child: const Text("Trời sẽ nắng vào ngày em yên lòng.",
-        style: TextStyle(
-            fontSize: 20, fontWeight: FontWeight.normal, color: Colors.white)));
-
-Widget editProfileButton(BuildContext context) => ElevatedButton(
-    onPressed: () {
-      // showEditProfileDialog(context);
-    },
-    style: ElevatedButton.styleFrom(
-        minimumSize: const Size(120, 40),
-        // backgroundColor: AppColor.listColor,
-        // padding: EdgeInsets.symmetric(horizontal: 50, vertical: 10),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))),
-    child: const Text(
-      "Edit Profile",
-      style: TextStyle(color: Colors.black),
-    ));
-
-// Widget logOutButton(BuildContext context) => ElevatedButton(
-//     // onPressed: () async {}
-//     onPressed: () => Navigator.push(
-//           context,
-//           MaterialPageRoute(
-//             builder: (e) => const Wellcome(),
-//           ),
-//         ),
-//     style: ElevatedButton.styleFrom(
-//         minimumSize: const Size(120, 40),
-//         backgroundColor: Colors.red.shade300,
-//         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))),
-//     child: const Text(
-//       "Log out",
-//       style: TextStyle(color: Colors.white),
-//     ));

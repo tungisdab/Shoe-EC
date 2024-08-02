@@ -1,4 +1,5 @@
 import 'package:app_shoes_ec/authentication/src/sign_in_bloc/sign_in_bloc.dart';
+import 'package:app_shoes_ec/screens/screens.dart';
 import 'package:app_shoes_ec/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -97,6 +98,23 @@ class _SignInScreenState extends State<SignInScreen> {
 									),
 								),
 							),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: GestureDetector(
+                  onTap: () => Navigator.push(context, 
+                    MaterialPageRoute(
+                        builder: (e) => const ForgotPassword(),
+                      ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text('Forgot password?', style: TextStyle(color: Theme.of(context).colorScheme.primary)),
+                    ],
+                  ),
+                ),
+              ),
 							const SizedBox(height: 20),
 							!signInRequired
 								? SizedBox(
@@ -133,6 +151,7 @@ class _SignInScreenState extends State<SignInScreen> {
 										),
 									)
 							: const CircularProgressIndicator(),
+              
 						],
 					)
 				),

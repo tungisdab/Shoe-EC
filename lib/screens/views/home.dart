@@ -36,7 +36,6 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
     }
 
     return Scaffold(
-      // backgroundColor: Colors.white,
       body: SafeArea(
         child: CustomScrollView(
           slivers: [

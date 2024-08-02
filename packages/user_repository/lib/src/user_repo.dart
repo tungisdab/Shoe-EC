@@ -13,4 +13,7 @@ abstract class UserRepository {
 	Future<void> signIn(String email, String password);
 
 	Future<void> logOut();
+
+  Future<bool> checkUserExists(String userId);
 }
+

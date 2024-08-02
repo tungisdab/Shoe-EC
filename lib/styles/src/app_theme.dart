@@ -15,10 +15,18 @@ class AppTheme {
           seedColor: chosenColor.primaryColor,
           background: chosenColor.backgroundColor,
           primary: chosenColor.primaryColor,
+          tertiary: chosenColor.tertiary,
+          shadow: chosenColor.shadowColor,
         ),
         appBarTheme: AppBarTheme(
           backgroundColor: chosenColor.primaryColor,
           foregroundColor: chosenColor.foregroundColor,
+          iconTheme: IconThemeData(
+            color: chosenColor.textColor, // Màu cho leading
+          ),
+          actionsIconTheme: const IconThemeData(
+            color: Colors.red, // Màu cho actions
+          ),
         ),
         textTheme: TextTheme(
           bodyMedium: TextStyle(
