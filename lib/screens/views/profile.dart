@@ -1,6 +1,5 @@
 import 'dart:developer';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:app_shoes_ec/authentication/authentication.dart';
 import 'package:app_shoes_ec/styles/style.dart';
@@ -23,7 +22,6 @@ class Profile extends StatefulWidget {
 
 class _ProfileState extends State<Profile> {
   final currentUser = FirebaseAuth.instance.currentUser!;
-  Uint8List? _image;
 
   Future<void> selectImage() async {
     final picker = ImagePicker();
@@ -113,15 +111,15 @@ class _ProfileState extends State<Profile> {
                             const Padding(padding: EdgeInsets.only(top: 50)),
                             imageField(userData['imageUrl']?.toString() ?? ''),
                             field('Name'),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 10),
                             nameField(userData['name']),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 10),
                             field('Phone'),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 10),
                             phoneField(userData['phone']),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 10),
                             field('Address'),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 10),
                             addressField(userData['address']),
                           ],
                         ),

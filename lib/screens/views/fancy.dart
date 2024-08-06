@@ -1,4 +1,3 @@
-import 'package:app_shoes_ec/components/components.dart';
 import 'package:app_shoes_ec/data/data.dart';
 import 'package:app_shoes_ec/models/models.dart';
 import 'package:app_shoes_ec/styles/style.dart';
@@ -102,24 +101,24 @@ class _FancyState extends State<Fancy> {
 
           return GestureDetector(
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (e) => DetailProduct(
-                    name: name,
-                    path: path,
-                    price: price,
-                    sale: sale,
-                    isFavorite: isFavorite,
-                    isOrdered: isOrdered,
-                    quantityColor: quantityColor,
-                    quantitySize: quantitySize,
-                    quantitySold: quantitySold,
-                    star: star,
-                    images: images,
-                  ),
-                ),
-              );
+              // Navigator.push(
+              //   context,
+              //   MaterialPageRoute(
+              //     builder: (e) => DetailProduct(
+              //       name: name,
+              //       path: path,
+              //       price: price,
+              //       sale: sale,
+              //       isFavorite: isFavorite,
+              //       isOrdered: isOrdered,
+              //       quantityColor: quantityColor,
+              //       quantitySize: quantitySize,
+              //       quantitySold: quantitySold,
+              //       star: star,
+              //       images: images,
+              //     ),
+              //   ),
+              // );
             },
             child: Container(
               margin: EdgeInsets.only(left: 10.r, right: 10.r, top: 10.r),

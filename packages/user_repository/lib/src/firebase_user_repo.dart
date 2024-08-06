@@ -5,6 +5,8 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:user_repository/src/models/user.dart';
 import 'package:user_repository/src/user_repo.dart';
 
+import 'entities/entities.dart';
+
 class FirebaseUserRepo implements UserRepository {
   final FirebaseAuth _firebaseAuth;
   final usersCollection = FirebaseFirestore.instance.collection('users');
@@ -68,23 +70,24 @@ class FirebaseUserRepo implements UserRepository {
       );
       UserCredential userCredential = await _firebaseAuth.signInWithCredential(credential);
       
-      // MyUser myUser = MyUser(
-      //   userId: userCredential.user!.uid,
-      //   name: userCredential.user!.displayName ?? '',
-      //   imageUrl: userCredential.user!.photoURL ?? '',
-      //   email: userCredential.user!.email ?? '',
-      //   phone: '',
-      //   address: '',
-      // );
-      // MyUser myUser = myUser.copyWith(userId: userCredential.user!.uid);
-      return MyUser(
-        userId: userCredential.user!.uid,
-        name: userCredential.user!.displayName ?? '',
-        imageUrl: userCredential.user!.photoURL ?? '',
-        email: userCredential.user!.email ?? '',
-        phone: '',
-        address: '',
-      );
+      bool userExists = await checkUserExists(userCredential.user!.uid);
+      if (userExists) {
+        final userDoc = await _firestore.collection('users').doc(userCredential.user!.uid).get();
+        return MyUser.fromEntity(MyUserEntity.fromJson(userDoc.data()!));
+      } else {
+        MyUser newUser = MyUser(
+          userId: userCredential.user!.uid,
+          name: userCredential.user!.displayName ?? '',
+          imageUrl: userCredential.user!.photoURL ?? '',
+          email: userCredential.user!.email ?? '',
+          phone: '',
+          address: '',
+          cartProducts: [],  
+          favoriteProducts: [],  
+        );
+        await setUserData(newUser);
+        return newUser;
+      }
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -96,7 +99,7 @@ class FirebaseUserRepo implements UserRepository {
     try {
       await usersCollection
           .doc(myUser.userId)
-          .set(myUser.toEntity().toDocument());
+          .set(myUser.toEntity().toJson(), SetOptions(merge: true));
     } catch (e) {
       log(e.toString());
       rethrow;

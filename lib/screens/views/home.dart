@@ -1,5 +1,6 @@
+import 'package:app_shoes_ec/api/api.dart';
 import 'package:app_shoes_ec/components/components.dart';
-import 'package:app_shoes_ec/data/data.dart';
+import 'package:app_shoes_ec/models/models.dart';
 import 'package:app_shoes_ec/widgets/widgets.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +15,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
+  final ProductService productService = ProductService();
   @override
   bool get wantKeepAlive => true;
 
@@ -43,31 +45,33 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
             SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsets.all(10.r),
-                child: GridView.builder(
-                  addAutomaticKeepAlives: true,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount,
-                    childAspectRatio: 0.7,
-                    crossAxisSpacing: 10.h,
-                    mainAxisSpacing: 10.h,
-                  ),
-                  itemCount: data.length,
-                  itemBuilder: (context, index) {
-                    return item(
-                      data[index].name,
-                      data[index].path,
-                      data[index].price,
-                      data[index].sale,
-                      data[index].isFavorite,
-                      data[index].isOrdered,
-                      data[index].quantityColor,
-                      data[index].quantitySize,
-                      data[index].quantitySold,
-                      data[index].star,
-                      data[index].images,
-                    );
+                child: StreamBuilder<List<ProductModel>>(
+                  stream: productService.getProducts(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return const Center(child: Text('No products available'));
+                    } else {
+                      final products = snapshot.data!;
+                      return GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: crossAxisCount,
+                          childAspectRatio: 0.7,
+                          crossAxisSpacing: 10.h,
+                          mainAxisSpacing: 10.h,
+                        ),
+                        itemCount: products.length,
+                        itemBuilder: (context, index) {
+                          final product = products[index];
+                          return item(product);
+                        },
+                      );
+                    }
                   },
                 ),
               ),
@@ -78,19 +82,7 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
     );
   }
 
-  Widget item(
-          String name,
-          String path,
-          String price,
-          String sale,
-          bool isFavorite,
-          bool isOrdered,
-          int quantityColor,
-          int quantitySize,
-          int quantitySold,
-          double star,
-          List<String> images) =>
-      LayoutBuilder(
+  Widget item(ProductModel product) => LayoutBuilder(
         builder: (context, constraints) {
           double itemWidth = constraints.maxWidth;
           double itemHeight = constraints.maxHeight;
@@ -106,21 +98,11 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (e) => DetailProduct(
-                    name: name,
-                    path: path,
-                    price: price,
-                    sale: sale,
-                    isFavorite: isFavorite,
-                    isOrdered: isOrdered,
-                    quantityColor: quantityColor,
-                    quantitySize: quantitySize,
-                    quantitySold: quantitySold,
-                    star: star,
-                    images: images,
-                  ),
+                  builder: (context) => DetailProduct(product: product),
                 ),
               );
+
+
             },
             child: Container(
               decoration: BoxDecoration(
@@ -153,19 +135,25 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
                             height: imageHeight,
                             width: double.infinity,
                             child: ClipRRect(
-                                borderRadius: BorderRadius.circular(16),
-                                child: Image.asset(path, fit: BoxFit.cover)),
+                              borderRadius: BorderRadius.circular(16),
+                              child: Image.network(
+                                product.images.isNotEmpty
+                                    ? product.images.first
+                                    : 'https://via.placeholder.com/150',
+                                fit: BoxFit.contain,
+                              ),
+                            ),
                           ),
                         ),
-                        Positioned(
-                          top: 5.h,
-                          left: 5,
-                          child: Icon(
-                            isFavorite ? IconlyBold.heart : IconlyBroken.heart,
-                            size: 25.h,
-                            color: Colors.red.shade400,
-                          ),
-                        ),
+                        // Positioned(
+                        //   top: 5.h,
+                        //   left: 5,
+                        //   child: Icon(
+                        //     isFavorite ? IconlyBold.heart : IconlyBroken.heart,
+                        //     size: 25.h,
+                        //     color: Colors.red.shade400,
+                        //   ),
+                        // ),
                       ],
                     ),
                     SizedBox(
@@ -178,7 +166,7 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           Text(
-                            name,
+                            product.name,
                             style: TextStyle(
                               fontWeight: FontWeight.normal,
                               fontSize: fontSize,
@@ -188,7 +176,7 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
                             maxLines: 1,
                           ),
                           Text(
-                            'đ: $price',
+                            'đ: ${product.price}',
                             style: TextStyle(
                               fontWeight: FontWeight.normal,
                               fontSize: fontSize,
@@ -208,7 +196,7 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
                                     color: Colors.red,
                                   ),
                                   Text(
-                                    ': $sale%',
+                                    ': ${product.sale}%',
                                     style: TextStyle(
                                       fontSize: fontSize,
                                       color: Colors.red,
@@ -224,7 +212,7 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
                                     color: Colors.yellow.shade700,
                                   ),
                                   Text(
-                                    ': $star',
+                                    ': ${product.vote}',
                                     style: TextStyle(
                                       fontSize: fontSize,
                                       color: Colors.red.shade400,

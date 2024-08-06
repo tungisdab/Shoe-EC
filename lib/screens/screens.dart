@@ -2,6 +2,7 @@ export 'views/cart.dart';
 export 'views/fancy.dart';
 export 'views/forgot_password.dart';
 export 'views/home.dart';
+export 'views/home1.dart';
 export 'views/notice.dart';
 export 'views/profile.dart';
 export 'views/search.dart';

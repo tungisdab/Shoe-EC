@@ -8,6 +8,8 @@ class MyUser extends Equatable {
   final String email;
   final String phone;
   final String address;
+  final List<String> cartProducts;
+  final List<String> favoriteProducts;
 
   const MyUser({
     required this.userId,
@@ -16,10 +18,12 @@ class MyUser extends Equatable {
     required this.email,
     required this.phone,
     required this.address,
+    required this.cartProducts,
+    required this.favoriteProducts,
   });
 
   static const empty = MyUser(
-      userId: '', name: '', imageUrl: '', email: '', phone: '', address: '');
+      userId: '', name: '', imageUrl: '', email: '', phone: '', address: '', cartProducts: [], favoriteProducts: []);
 
   MyUser copyWith(
       {String? userId,
@@ -27,7 +31,9 @@ class MyUser extends Equatable {
       String? imageUrl,
       String? email,
       String? phone,
-      String? address}) {
+      String? address,
+      List<String>? cartProducts,
+      List<String>? favoriteProducts}) {
     return MyUser(
       userId: userId ?? this.userId,
       name: name ?? this.name,
@@ -35,6 +41,8 @@ class MyUser extends Equatable {
       email: email ?? this.email,
       phone: phone ?? this.phone,
       address: address ?? this.address,
+      cartProducts: cartProducts ?? this.cartProducts,
+      favoriteProducts: favoriteProducts ?? this.favoriteProducts,
     );
   }
 
@@ -45,7 +53,9 @@ class MyUser extends Equatable {
         imageUrl: imageUrl,
         email: email,
         phone: phone,
-        address: address);
+        address: address,
+        cartProducts: cartProducts,
+        favoriteProducts: favoriteProducts);
   }
 
   static MyUser fromEntity(MyUserEntity entity) {
@@ -55,9 +65,11 @@ class MyUser extends Equatable {
         imageUrl: entity.imageUrl,
         email: entity.email,
         phone: entity.phone,
-        address: entity.address);
+        address: entity.address,
+        cartProducts: entity.cartProducts,
+        favoriteProducts: entity.favoriteProducts);
   }
 
   @override
-  List<Object?> get props => [userId, name, imageUrl,email, phone, address];
+  List<Object?> get props => [userId, name, imageUrl,email, phone, address, cartProducts, favoriteProducts];
 }

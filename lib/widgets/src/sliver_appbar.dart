@@ -92,7 +92,7 @@ class _RecipeDetailAppBarState extends State<RecipeDetailAppBar> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (e) => const Notice()),
+              MaterialPageRoute(builder: (e) => const Home1()),
             );
           },
         ),

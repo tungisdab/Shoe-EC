@@ -11,10 +11,10 @@ class ChangeLanguageBottomSheet {
         builder: (context) {
           return Column(
             children: [
-              Container(
+              const SizedBox(
                 height: 100,
-                color: Colors.red,
-                child: const Text('Change Language'),
+                // color: Colors.red,
+                child: Text('Change Language'),
               ),
               BlocBuilder<LocalizationBloc, LocalizationState>(
                 buildWhen: (previous, current) =>

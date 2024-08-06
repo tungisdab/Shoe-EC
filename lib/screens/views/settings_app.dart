@@ -42,10 +42,10 @@ class _SettingsAppState extends State<SettingsApp> {
       body: SafeArea(
         child: Column(
           children: [
-            Text(l10n!.setting),
-            Text(l10n.name),
-            Text(l10n.color),
-            Text(l10n.language),
+            // Text(l10n!.setting),
+            // Text(l10n.name),
+            // Text(l10n.color),
+            // Text(l10n.language),
             BlocBuilder<ThemeBloc, bool>(
               builder: (context, state) {
                 return Text('Current Theme: ${state ? 'Dark' : 'Light'}');
